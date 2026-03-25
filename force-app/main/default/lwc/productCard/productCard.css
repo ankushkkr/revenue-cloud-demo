@@ -1,0 +1,172 @@
+.product-card {
+    background: #fff;
+    border-radius: 16px;
+    border: 2px solid #e5e5e5;
+    overflow: hidden;
+    transition: all 0.25s;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+    border-color: #C9C9C9;
+}
+
+.product-card.selected {
+    border-color: #0176D3;
+    box-shadow: 0 0 0 1px #0176D3, 0 4px 12px rgba(1,118,211,0.15);
+}
+
+.product-card.best-match {
+    border-color: #FE9339;
+}
+
+.product-card.best-match.selected {
+    border-color: #0176D3;
+}
+
+/* Match Badge */
+.match-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.match-badge.best {
+    background: linear-gradient(135deg, #FFF3E0, #FFE0B2);
+    color: #E65100;
+}
+
+.match-badge.strong {
+    background: linear-gradient(135deg, #E3F6E8, #C8E6C9);
+    color: #1B5E20;
+}
+
+.match-badge.good {
+    background: linear-gradient(135deg, #E1F5FE, #B3E5FC);
+    color: #01579B;
+}
+
+.match-icon {
+    --slds-c-icon-color-foreground-default: currentColor;
+}
+
+/* Card Header */
+.card-header {
+    padding: 1.5rem 1.5rem 0;
+}
+
+.card-category {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.card-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #032D60;
+    margin-bottom: 0.5rem;
+}
+
+.card-description {
+    font-size: 0.85rem;
+    color: #706E6B;
+    line-height: 1.6;
+}
+
+/* Pricing */
+.card-pricing {
+    padding: 1.25rem 1.5rem;
+    margin: 1rem 1.5rem;
+    background: #F8F9FA;
+    border-radius: 10px;
+}
+
+.price-main {
+    display: flex;
+    align-items: baseline;
+    gap: 2px;
+}
+
+.price-currency {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #032D60;
+}
+
+.price-value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #032D60;
+}
+
+.price-unit {
+    font-size: 0.8rem;
+    color: #939393;
+    margin-left: 4px;
+}
+
+.price-annual {
+    font-size: 0.75rem;
+    color: #2E844A;
+    margin-top: 0.25rem;
+    font-weight: 500;
+}
+
+/* Features */
+.card-features {
+    padding: 0 1.5rem;
+    flex: 1;
+}
+
+.features-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #939393;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+}
+
+.features-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: #3E3E3C;
+    padding: 0.3rem 0;
+}
+
+.feature-check {
+    --slds-c-icon-color-foreground-default: #2E844A;
+    flex-shrink: 0;
+}
+
+/* Action */
+.card-action {
+    padding: 1.5rem;
+}
+
+.full-width {
+    width: 100%;
+}
+
+.full-width lightning-button-icon,
+.full-width button {
+    width: 100%;
+}

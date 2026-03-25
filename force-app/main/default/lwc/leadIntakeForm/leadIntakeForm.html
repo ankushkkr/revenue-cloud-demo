@@ -1,0 +1,141 @@
+<template>
+    <div class="form-container">
+        <div class="form-header">
+            <h1 class="form-title">Tell Us About Your Organization</h1>
+            <p class="form-subtitle">
+                Help us understand your requirements so we can recommend the best UKG products for your needs.
+            </p>
+        </div>
+
+        <div class="form-card">
+            <!-- Company Information -->
+            <div class="form-section">
+                <h2 class="section-label">
+                    <lightning-icon icon-name="standard:account" size="x-small" class="slds-m-right_x-small"></lightning-icon>
+                    Company Information
+                </h2>
+                <div class="form-grid">
+                    <lightning-input
+                        label="Company Name"
+                        value={companyName}
+                        onchange={handleCompanyName}
+                        placeholder="e.g., Acme Corporation"
+                        required>
+                    </lightning-input>
+                    <lightning-combobox
+                        label="Industry"
+                        value={industry}
+                        options={industryOptions}
+                        onchange={handleIndustry}
+                        placeholder="Select Industry"
+                        required>
+                    </lightning-combobox>
+                    <lightning-input
+                        type="number"
+                        label="Number of Employees"
+                        value={employeeCount}
+                        onchange={handleEmployeeCount}
+                        min="1"
+                        placeholder="e.g., 5000"
+                        required>
+                    </lightning-input>
+                    <lightning-combobox
+                        label="Company Size"
+                        value={companySize}
+                        options={companySizeOptions}
+                        onchange={handleCompanySize}
+                        placeholder="Select Size">
+                    </lightning-combobox>
+                </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="form-section">
+                <h2 class="section-label">
+                    <lightning-icon icon-name="standard:contact" size="x-small" class="slds-m-right_x-small"></lightning-icon>
+                    Contact Information
+                </h2>
+                <div class="form-grid">
+                    <lightning-input
+                        label="Contact Name"
+                        value={contactName}
+                        onchange={handleContactName}
+                        placeholder="e.g., John Smith"
+                        required>
+                    </lightning-input>
+                    <lightning-input
+                        type="email"
+                        label="Email Address"
+                        value={contactEmail}
+                        onchange={handleContactEmail}
+                        placeholder="e.g., john@company.com"
+                        required>
+                    </lightning-input>
+                    <lightning-input
+                        type="tel"
+                        label="Phone Number"
+                        value={contactPhone}
+                        onchange={handleContactPhone}
+                        placeholder="e.g., (555) 123-4567">
+                    </lightning-input>
+                    <lightning-input
+                        label="Job Title"
+                        value={jobTitle}
+                        onchange={handleJobTitle}
+                        placeholder="e.g., VP of HR">
+                    </lightning-input>
+                </div>
+            </div>
+
+            <!-- Requirements -->
+            <div class="form-section">
+                <h2 class="section-label">
+                    <lightning-icon icon-name="standard:task" size="x-small" class="slds-m-right_x-small"></lightning-icon>
+                    What are you looking for? <span class="label-hint">(Select all that apply)</span>
+                </h2>
+                <div class="requirements-grid">
+                    <template for:each={requirementOptions} for:item="req">
+                        <div
+                            key={req.id}
+                            class={req.className}
+                            onclick={handleRequirementToggle}
+                            data-id={req.id}>
+                            <lightning-icon icon-name={req.icon} size="x-small" class="req-icon"></lightning-icon>
+                            <span class="req-label">{req.label}</span>
+                            <template lwc:if={req.selected}>
+                                <lightning-icon icon-name="utility:check" size="xx-small" class="req-check"></lightning-icon>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Additional Notes -->
+            <div class="form-section">
+                <h2 class="section-label">
+                    <lightning-icon icon-name="standard:note" size="x-small" class="slds-m-right_x-small"></lightning-icon>
+                    Additional Notes
+                </h2>
+                <lightning-textarea
+                    label="Anything else we should know?"
+                    value={notes}
+                    onchange={handleNotes}
+                    placeholder="Tell us about specific challenges, timeline, budget considerations, or current systems in use..."
+                    max-length="2000">
+                </lightning-textarea>
+            </div>
+
+            <!-- Submit -->
+            <div class="form-actions">
+                <lightning-button
+                    variant="brand"
+                    label="Find Matching Products"
+                    icon-name="utility:forward"
+                    icon-position="right"
+                    onclick={handleSubmit}
+                    class="submit-btn">
+                </lightning-button>
+            </div>
+        </div>
+    </div>
+</template>

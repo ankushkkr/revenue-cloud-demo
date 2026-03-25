@@ -1,0 +1,137 @@
+<template>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-inner">
+                <div class="header-brand">
+                    <div class="brand-icon">
+                        <lightning-icon icon-name="standard:product" size="small"></lightning-icon>
+                    </div>
+                    <div class="brand-text">
+                        <span class="brand-name">Revenue Cloud</span>
+                        <span class="brand-sub">SALESFORCE</span>
+                    </div>
+                </div>
+
+                <div class="header-steps">
+                    <lightning-progress-indicator current-step={currentStep} type="path" variant="base">
+                        <lightning-progress-step label="Home" value="home" onclick={handleStepClick}></lightning-progress-step>
+                        <lightning-progress-step label="Lead Requirements" value="lead" onclick={handleStepClick}></lightning-progress-step>
+                        <lightning-progress-step label="Products" value="products" onclick={handleStepClick}></lightning-progress-step>
+                        <lightning-progress-step label="Quote" value="quote" onclick={handleStepClick}></lightning-progress-step>
+                    </lightning-progress-indicator>
+                </div>
+
+                <div class="header-badge">
+                    <lightning-badge label="UKG Demo" class="slds-theme_success"></lightning-badge>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Landing Page -->
+            <template lwc:if={isHome}>
+                <div class="landing-section">
+                    <div class="hero">
+                        <div class="hero-content">
+                            <span class="hero-badge">
+                                <lightning-icon icon-name="utility:cloud" size="xx-small" class="slds-m-right_xx-small"></lightning-icon>
+                                Salesforce Revenue Cloud
+                            </span>
+                            <h1 class="hero-title">
+                                Transform Your <span class="gradient-text">Revenue Operations</span><br/>with UKG + Salesforce
+                            </h1>
+                            <p class="hero-description">
+                                Discover the perfect UKG product suite tailored to your organization's needs.
+                                Powered by Salesforce Revenue Cloud for seamless product configuration, pricing, and quoting.
+                            </p>
+                            <div class="hero-actions">
+                                <lightning-button
+                                    variant="brand"
+                                    label="Start Discovery"
+                                    icon-name="utility:forward"
+                                    icon-position="right"
+                                    onclick={goToLead}
+                                    class="slds-m-right_small">
+                                </lightning-button>
+                                <lightning-button
+                                    variant="neutral"
+                                    label="View All Products"
+                                    onclick={goToProducts}>
+                                </lightning-button>
+                            </div>
+                        </div>
+                        <div class="hero-stats">
+                            <div class="stat-card">
+                                <span class="stat-value">80K+</span>
+                                <span class="stat-label">Customers</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-value">150+</span>
+                                <span class="stat-label">Countries</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-value">70M+</span>
+                                <span class="stat-label">Users Worldwide</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="features-section">
+                        <h2 class="section-title">Why Revenue Cloud for UKG?</h2>
+                        <div class="feature-grid">
+                            <div class="feature-card">
+                                <div class="feature-icon blue">
+                                    <lightning-icon icon-name="utility:magicwand" size="small"></lightning-icon>
+                                </div>
+                                <h3>Smart Product Matching</h3>
+                                <p>AI-powered recommendations based on your organization's unique requirements, size, and industry.</p>
+                            </div>
+                            <div class="feature-card">
+                                <div class="feature-icon green">
+                                    <lightning-icon icon-name="utility:moneybag" size="small"></lightning-icon>
+                                </div>
+                                <h3>Dynamic Pricing</h3>
+                                <p>Real-time pricing with volume discounts, bundle savings, and custom enterprise rates.</p>
+                            </div>
+                            <div class="feature-card">
+                                <div class="feature-icon purple">
+                                    <lightning-icon icon-name="utility:shield" size="small"></lightning-icon>
+                                </div>
+                                <h3>Compliant Quoting</h3>
+                                <p>Generate audit-ready quotes with approval workflows, version tracking, and digital signatures.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Lead Intake Form -->
+            <template lwc:if={isLead}>
+                <c-lead-intake-form onsubmitlead={handleLeadSubmit}></c-lead-intake-form>
+            </template>
+
+            <!-- Product Recommendations -->
+            <template lwc:if={isProducts}>
+                <c-product-recommendations
+                    lead-data={leadDataJson}
+                    onproductsselected={handleProductsSelected}>
+                </c-product-recommendations>
+            </template>
+
+            <!-- Quote Summary -->
+            <template lwc:if={isQuote}>
+                <c-quote-summary
+                    lead-data={leadDataJson}
+                    selected-products={selectedProductsJson}>
+                </c-quote-summary>
+            </template>
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>Salesforce Revenue Cloud Demo &mdash; Built for UKG Partnership</p>
+        </footer>
+    </div>
+</template>

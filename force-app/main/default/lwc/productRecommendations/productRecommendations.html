@@ -1,0 +1,95 @@
+<template>
+    <div class="products-container">
+        <div class="products-header">
+            <h1 class="products-title">Recommended Products</h1>
+            <p class="products-subtitle">
+                <template lwc:if={hasLeadData}>
+                    Based on <strong>{parsedLeadData.companyName}</strong>'s requirements
+                    ({parsedLeadData.employeeCount} employees, {parsedLeadData.industry})
+                </template>
+                <template lwc:else>
+                    Browse the complete UKG product catalog
+                </template>
+            </p>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-bar">
+            <div class="filter-group">
+                <lightning-combobox
+                    label="Category"
+                    value={selectedCategory}
+                    options={categoryOptions}
+                    onchange={handleCategoryChange}
+                    variant="label-hidden"
+                    placeholder="All Categories">
+                </lightning-combobox>
+            </div>
+            <div class="filter-group">
+                <lightning-combobox
+                    label="Tier"
+                    value={selectedTier}
+                    options={tierOptions}
+                    onchange={handleTierChange}
+                    variant="label-hidden"
+                    placeholder="All Tiers">
+                </lightning-combobox>
+            </div>
+            <div class="selected-count">
+                <lightning-badge label={selectedCountLabel}></lightning-badge>
+            </div>
+        </div>
+
+        <!-- Loading -->
+        <template lwc:if={isLoading}>
+            <div class="loading-container">
+                <lightning-spinner alternative-text="Loading products..." size="medium"></lightning-spinner>
+            </div>
+        </template>
+
+        <!-- Product Grid -->
+        <template lwc:if={hasProducts}>
+            <div class="product-grid">
+                <template for:each={filteredProducts} for:item="item">
+                    <c-product-card
+                        key={item.product.productId}
+                        product={item.product}
+                        match-score={item.matchScore}
+                        match-label={item.matchLabel}
+                        is-selected={item.isSelected}
+                        onselect={handleProductSelect}
+                        ondeselect={handleProductDeselect}>
+                    </c-product-card>
+                </template>
+            </div>
+        </template>
+
+        <!-- No results -->
+        <template lwc:if={noProducts}>
+            <div class="empty-state">
+                <lightning-icon icon-name="utility:search" size="large" class="empty-icon"></lightning-icon>
+                <h3>No products match your filters</h3>
+                <p>Try adjusting the category or tier filters.</p>
+            </div>
+        </template>
+
+        <!-- Action Bar -->
+        <template lwc:if={hasSelectedProducts}>
+            <div class="action-bar">
+                <div class="action-bar-inner">
+                    <div class="action-info">
+                        <strong>{selectedProductsList.length} product(s)</strong> selected
+                        &mdash; Est. <strong>{estimatedMonthly}</strong>/employee/month
+                    </div>
+                    <lightning-button
+                        variant="brand"
+                        label="Generate Quote"
+                        icon-name="utility:forward"
+                        icon-position="right"
+                        onclick={handleGenerateQuote}>
+                    </lightning-button>
+                </div>
+            </div>
+        </template>
+    </div>
+</template>

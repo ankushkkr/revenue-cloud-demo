@@ -1,0 +1,154 @@
+<template>
+    <div class="quote-container">
+        <div class="quote-header">
+            <h1 class="quote-title">Quote Summary</h1>
+            <p class="quote-subtitle">Review your configured UKG solution package</p>
+        </div>
+
+        <!-- Quote Document -->
+        <div class="quote-document">
+            <!-- Quote Meta -->
+            <div class="quote-meta">
+                <div class="quote-meta-left">
+                    <div class="quote-logo">
+                        <lightning-icon icon-name="standard:product" size="medium"></lightning-icon>
+                    </div>
+                    <div>
+                        <h2 class="quote-doc-title">Revenue Cloud Quote</h2>
+                        <p class="quote-number">QT-{quoteNumber}</p>
+                    </div>
+                </div>
+                <div class="quote-meta-right">
+                    <div class="meta-item">
+                        <span class="meta-label">Created</span>
+                        <span class="meta-value">{todayDate}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Valid Until</span>
+                        <span class="meta-value">{validUntilDate}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Status</span>
+                        <lightning-badge label="Draft" class="status-badge"></lightning-badge>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Company Info -->
+            <template lwc:if={hasLeadInfo}>
+                <div class="info-grid">
+                    <div class="info-card">
+                        <h3 class="info-card-title">
+                            <lightning-icon icon-name="standard:account" size="xx-small" class="slds-m-right_xx-small"></lightning-icon>
+                            Client Details
+                        </h3>
+                        <div class="info-row">
+                            <span class="info-label">Company</span>
+                            <span class="info-value">{parsedLeadData.companyName}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Industry</span>
+                            <span class="info-value">{parsedLeadData.industry}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Employees</span>
+                            <span class="info-value">{parsedLeadData.employeeCount}</span>
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <h3 class="info-card-title">
+                            <lightning-icon icon-name="standard:contact" size="xx-small" class="slds-m-right_xx-small"></lightning-icon>
+                            Contact
+                        </h3>
+                        <div class="info-row">
+                            <span class="info-label">Name</span>
+                            <span class="info-value">{parsedLeadData.contactName}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Email</span>
+                            <span class="info-value">{parsedLeadData.contactEmail}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Title</span>
+                            <span class="info-value">{parsedLeadData.jobTitle}</span>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Billing Toggle -->
+            <div class="billing-toggle">
+                <span class={monthlyClass} data-value="monthly" onclick={handleBillingChange}>Monthly</span>
+                <span class={annualClass} data-value="annual" onclick={handleBillingChange}>
+                    Annual <span class="save-badge">Save ~9%</span>
+                </span>
+            </div>
+
+            <!-- Line Items -->
+            <div class="line-items">
+                <div class="line-items-header">
+                    <span class="col-product">Product</span>
+                    <span class="col-category">Category</span>
+                    <span class="col-price">Unit Price</span>
+                    <span class="col-qty">Qty</span>
+                    <span class="col-total">Total</span>
+                </div>
+                <template for:each={lineItems} for:item="item">
+                    <div key={item.productId} class="line-item">
+                        <span class="col-product">
+                            <strong>{item.name}</strong>
+                            <small>{item.tier}</small>
+                        </span>
+                        <span class="col-category">{item.category}</span>
+                        <span class="col-price">${item.unitPrice}</span>
+                        <span class="col-qty">{employeeCount}</span>
+                        <span class="col-total">${item.lineTotal}</span>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Totals -->
+            <div class="totals-section">
+                <div class="total-row">
+                    <span>Subtotal</span>
+                    <span>${subtotal}</span>
+                </div>
+                <template lwc:if={hasDiscount}>
+                    <div class="total-row discount">
+                        <span>Bundle Discount ({discountPercent}%)</span>
+                        <span>-${discountAmount}</span>
+                    </div>
+                </template>
+                <div class="total-row grand-total">
+                    <span>Total ({billingLabel})</span>
+                    <span>${grandTotal}</span>
+                </div>
+                <div class="per-employee">
+                    Effective rate: <strong>${perEmployeeRate}/employee/{billingPeriod}</strong>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="quote-actions">
+                <lightning-button
+                    variant="neutral"
+                    label="Download PDF"
+                    icon-name="utility:download"
+                    onclick={handleDownload}>
+                </lightning-button>
+                <lightning-button
+                    variant="neutral"
+                    label="Send to Client"
+                    icon-name="utility:email"
+                    onclick={handleSendEmail}>
+                </lightning-button>
+                <lightning-button
+                    variant="brand"
+                    label="Submit for Approval"
+                    icon-name="utility:approval"
+                    onclick={handleSubmitApproval}>
+                </lightning-button>
+            </div>
+        </div>
+    </div>
+</template>
