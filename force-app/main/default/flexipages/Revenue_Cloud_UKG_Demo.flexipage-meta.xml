@@ -12,7 +12,7 @@
     </flexiPageRegions>
     <masterLabel>Revenue Cloud UKG Demo</masterLabel>
     <template>
-        <name>flexipage:appHomeTemplateSingleColumn</name>
+        <name>flexipage:appHomeTemplateOneRegion</name>
     </template>
     <type>AppPage</type>
 </FlexiPage>
