@@ -1,18 +1,41 @@
-import { LightningElement, track } from 'lwc';
+import { LightningElement, api, wire, track } from 'lwc';
+import { getRecord, getFieldValue } from 'lightning/uiRecordApi';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { updateRecord } from 'lightning/uiRecordApi';
+
+import COMPANY_FIELD from '@salesforce/schema/Lead.Company';
+import INDUSTRY_FIELD from '@salesforce/schema/Lead.Industry';
+import EMPLOYEE_COUNT_FIELD from '@salesforce/schema/Lead.Employee_Count__c';
+import COMPANY_SIZE_FIELD from '@salesforce/schema/Lead.Company_Size__c';
+import REQUIREMENTS_FIELD from '@salesforce/schema/Lead.Requirements__c';
+import NOTES_FIELD from '@salesforce/schema/Lead.Additional_Notes__c';
+
+const FIELDS = [COMPANY_FIELD, INDUSTRY_FIELD, EMPLOYEE_COUNT_FIELD, COMPANY_SIZE_FIELD, REQUIREMENTS_FIELD, NOTES_FIELD];
 
 export default class LeadIntakeForm extends LightningElement {
-    companyName = '';
+    @api recordId;
+    @track selectedRequirements = [];
+    @track isSubmitting = false;
+
     industry = '';
     employeeCount = '';
     companySize = '';
-    contactName = '';
-    contactEmail = '';
-    contactPhone = '';
-    jobTitle = '';
     notes = '';
 
-    @track selectedRequirements = [];
+    @wire(getRecord, { recordId: '$recordId', fields: FIELDS })
+    wiredLead({ data, error }) {
+        if (data) {
+            this.industry = getFieldValue(data, INDUSTRY_FIELD) || '';
+            this.employeeCount = getFieldValue(data, EMPLOYEE_COUNT_FIELD) || '';
+            this.companySize = getFieldValue(data, COMPANY_SIZE_FIELD) || '';
+            this.notes = getFieldValue(data, NOTES_FIELD) || '';
+            const reqs = getFieldValue(data, REQUIREMENTS_FIELD);
+            this.selectedRequirements = reqs ? reqs.split(',').map(r => r.trim()) : [];
+        }
+        if (error) {
+            console.error('Error loading lead:', error);
+        }
+    }
 
     get industryOptions() {
         return [
@@ -61,14 +84,9 @@ export default class LeadIntakeForm extends LightningElement {
         }));
     }
 
-    handleCompanyName(event) { this.companyName = event.target.value; }
     handleIndustry(event) { this.industry = event.detail.value; }
     handleEmployeeCount(event) { this.employeeCount = event.target.value; }
     handleCompanySize(event) { this.companySize = event.detail.value; }
-    handleContactName(event) { this.contactName = event.target.value; }
-    handleContactEmail(event) { this.contactEmail = event.target.value; }
-    handleContactPhone(event) { this.contactPhone = event.target.value; }
-    handleJobTitle(event) { this.jobTitle = event.target.value; }
     handleNotes(event) { this.notes = event.target.value; }
 
     handleRequirementToggle(event) {
@@ -80,17 +98,7 @@ export default class LeadIntakeForm extends LightningElement {
         }
     }
 
-    handleSubmit() {
-        const allValid = [...this.template.querySelectorAll('lightning-input, lightning-combobox')]
-            .reduce((valid, input) => {
-                input.reportValidity();
-                return valid && input.checkValidity();
-            }, true);
-
-        if (!allValid) {
-            return;
-        }
-
+    async handleSubmit() {
         if (this.selectedRequirements.length === 0) {
             this.dispatchEvent(
                 new ShowToastEvent({
@@ -102,19 +110,36 @@ export default class LeadIntakeForm extends LightningElement {
             return;
         }
 
-        const leadData = {
-            companyName: this.companyName,
-            industry: this.industry,
-            employeeCount: parseInt(this.employeeCount, 10),
-            companySize: this.companySize,
-            contactName: this.contactName,
-            contactEmail: this.contactEmail,
-            contactPhone: this.contactPhone,
-            jobTitle: this.jobTitle,
-            requirements: this.selectedRequirements,
-            notes: this.notes
-        };
+        this.isSubmitting = true;
 
-        this.dispatchEvent(new CustomEvent('submitlead', { detail: leadData }));
+        try {
+            const fields = {};
+            fields.Id = this.recordId;
+            fields[INDUSTRY_FIELD.fieldApiName] = this.industry;
+            fields[EMPLOYEE_COUNT_FIELD.fieldApiName] = parseInt(this.employeeCount, 10) || null;
+            fields[COMPANY_SIZE_FIELD.fieldApiName] = this.companySize;
+            fields[REQUIREMENTS_FIELD.fieldApiName] = this.selectedRequirements.join(',');
+            fields[NOTES_FIELD.fieldApiName] = this.notes;
+
+            await updateRecord({ fields });
+
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: 'Lead Enriched',
+                    message: 'Discovery data saved to Lead record.',
+                    variant: 'success'
+                })
+            );
+        } catch (error) {
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: 'Error Saving Lead',
+                    message: error.body ? error.body.message : error.message,
+                    variant: 'error'
+                })
+            );
+        } finally {
+            this.isSubmitting = false;
+        }
     }
 }

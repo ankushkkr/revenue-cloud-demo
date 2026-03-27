@@ -1,54 +1,55 @@
 import { LightningElement, api, track, wire } from 'lwc';
+import { NavigationMixin } from 'lightning/navigation';
 import getRecommendedProducts from '@salesforce/apex/UKGProductService.getRecommendedProducts';
 import getAllProducts from '@salesforce/apex/UKGProductService.getAllProducts';
+import getLeadById from '@salesforce/apex/UKGProductService.getLeadById';
+import { getRecord, getFieldValue } from 'lightning/uiRecordApi';
 
-export default class ProductRecommendations extends LightningElement {
-    @api leadData = '{}';
+// Opportunity fields to detect context
+const OPP_FIELDS = [
+    'Opportunity.Name',
+    'Opportunity.AccountId'
+];
+
+export default class ProductRecommendations extends NavigationMixin(LightningElement) {
+    @api recordId;
+    @api objectApiName;
+    @api leadId;
+
     @track recommendations = [];
     @track selectedProductIds = [];
     @track selectedCategory = '';
     @track selectedTier = '';
     @track isLoading = true;
-
-    get parsedLeadData() {
-        try {
-            return JSON.parse(this.leadData);
-        } catch (e) {
-            return {};
-        }
-    }
-
-    get hasLeadData() {
-        const data = this.parsedLeadData;
-        return data && data.companyName;
-    }
+    @track leadRecord = null;
 
     connectedCallback() {
-        this.loadProducts();
+        this.loadData();
     }
 
-    async loadProducts() {
+    async loadData() {
         this.isLoading = true;
         try {
-            const data = this.parsedLeadData;
-            if (data && data.requirements && data.requirements.length > 0) {
-                const result = await getRecommendedProducts({
-                    industry: data.industry || '',
-                    employeeCount: data.employeeCount || 0,
-                    requirements: data.requirements || []
-                });
-                this.recommendations = result.map(r => ({
-                    ...r,
-                    isSelected: false
-                }));
+            // If on a Lead record page, use recordId as leadId
+            const effectiveLeadId = this.objectApiName === 'Lead' ? this.recordId : this.leadId;
+
+            if (effectiveLeadId) {
+                this.leadRecord = await getLeadById({ leadId: effectiveLeadId });
+                const requirements = this.leadRecord.Requirements__c
+                    ? this.leadRecord.Requirements__c.split(',').map(r => r.trim())
+                    : [];
+
+                if (requirements.length > 0) {
+                    this.recommendations = await getRecommendedProducts({
+                        industry: this.leadRecord.Industry || '',
+                        employeeCount: this.leadRecord.Employee_Count__c || 0,
+                        requirements: requirements
+                    });
+                } else {
+                    this.recommendations = await getAllProducts();
+                }
             } else {
-                const products = await getAllProducts();
-                this.recommendations = products.map(p => ({
-                    product: p,
-                    matchScore: 0,
-                    matchLabel: '',
-                    isSelected: false
-                }));
+                this.recommendations = await getAllProducts();
             }
         } catch (error) {
             console.error('Error loading products:', error);
@@ -57,11 +58,29 @@ export default class ProductRecommendations extends LightningElement {
         }
     }
 
+    get hasLeadData() {
+        return this.leadRecord && this.leadRecord.Company;
+    }
+
+    get leadCompanyName() {
+        return this.leadRecord ? this.leadRecord.Company : '';
+    }
+
+    get leadEmployeeCount() {
+        return this.leadRecord ? this.leadRecord.Employee_Count__c : '';
+    }
+
+    get leadIndustry() {
+        return this.leadRecord ? this.leadRecord.Industry : '';
+    }
+
     get categoryOptions() {
         const cats = new Set();
-        this.recommendations.forEach(r => cats.add(r.product.category));
+        this.recommendations.forEach(r => cats.add(r.product.Category__c));
         const options = [{ label: 'All Categories', value: '' }];
-        cats.forEach(c => options.push({ label: c, value: c }));
+        cats.forEach(c => {
+            if (c) options.push({ label: c, value: c });
+        });
         return options;
     }
 
@@ -77,13 +96,15 @@ export default class ProductRecommendations extends LightningElement {
     get filteredProducts() {
         return this.recommendations
             .filter(r => {
-                if (this.selectedCategory && r.product.category !== this.selectedCategory) return false;
-                if (this.selectedTier && r.product.tier !== this.selectedTier) return false;
+                if (this.selectedCategory && r.product.Category__c !== this.selectedCategory) return false;
+                if (this.selectedTier && r.product.Tier__c !== this.selectedTier) return false;
                 return true;
             })
             .map(r => ({
                 ...r,
-                isSelected: this.selectedProductIds.includes(r.product.productId)
+                isSelected: this.selectedProductIds.includes(r.product.Id),
+                reasons: r.reasons || [],
+                affinityProducts: r.affinityProducts || []
             }));
     }
 
@@ -97,7 +118,7 @@ export default class ProductRecommendations extends LightningElement {
 
     get selectedProductsList() {
         return this.recommendations.filter(r =>
-            this.selectedProductIds.includes(r.product.productId)
+            this.selectedProductIds.includes(r.product.Id)
         );
     }
 
@@ -112,7 +133,7 @@ export default class ProductRecommendations extends LightningElement {
     get estimatedMonthly() {
         let total = 0;
         this.selectedProductsList.forEach(r => {
-            total += r.product.monthlyPrice;
+            total += r.monthlyPrice || 0;
         });
         return '$' + total.toFixed(2);
     }
@@ -138,9 +159,12 @@ export default class ProductRecommendations extends LightningElement {
     }
 
     handleGenerateQuote() {
-        const selectedProducts = this.selectedProductsList.map(r => r.product);
+        // Fire event with selected products for parent/quick action to handle
         this.dispatchEvent(new CustomEvent('productsselected', {
-            detail: selectedProducts
+            detail: {
+                productIds: this.selectedProductIds,
+                leadId: this.leadRecord ? this.leadRecord.Id : null
+            }
         }));
     }
 }

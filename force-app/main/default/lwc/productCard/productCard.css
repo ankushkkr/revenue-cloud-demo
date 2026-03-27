@@ -157,6 +157,73 @@
     flex-shrink: 0;
 }
 
+/* Recommendation Reasons */
+.card-reasons {
+    padding: 0.75rem 1.25rem;
+    margin: 0.75rem 1.5rem 0;
+    background: linear-gradient(135deg, #F0F7FF, #E8F4FD);
+    border-radius: 10px;
+    border-left: 3px solid #0176D3;
+}
+
+.reasons-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #0176D3;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.4rem;
+}
+
+.reason-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    color: #032D60;
+    padding: 0.2rem 0;
+}
+
+.reason-icon {
+    --slds-c-icon-color-foreground-default: #0176D3;
+    flex-shrink: 0;
+}
+
+/* Frequently Bought Together */
+.card-affinity {
+    padding: 0.75rem 1.25rem;
+    margin: 0.5rem 1.5rem 0;
+    background: #FAFAFA;
+    border-radius: 10px;
+}
+
+.affinity-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #706E6B;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.4rem;
+}
+
+.affinity-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    color: #3E3E3C;
+    padding: 0.2rem 0;
+}
+
+.affinity-icon {
+    --slds-c-icon-color-foreground-default: #706E6B;
+    flex-shrink: 0;
+}
+
+.affinity-name {
+    flex: 1;
+}
+
 /* Action */
 .card-action {
     padding: 1.5rem;

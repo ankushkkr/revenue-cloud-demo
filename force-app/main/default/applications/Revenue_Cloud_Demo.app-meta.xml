@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomApplication xmlns="http://soap.sforce.com/2006/04/metadata">
+    <defaultLandingTab>Revenue_Cloud_Demo</defaultLandingTab>
+    <formFactors>Large</formFactors>
+    <label>Revenue Cloud Demo</label>
+    <navType>Standard</navType>
+    <tabs>Revenue_Cloud_Demo</tabs>
+    <tabs>Lead_Intake</tabs>
+    <tabs>Product_Recommendations</tabs>
+    <tabs>Quote_Summary</tabs>
+    <uiType>Lightning</uiType>
+</CustomApplication>

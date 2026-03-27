@@ -4,11 +4,11 @@
             <h1 class="products-title">Recommended Products</h1>
             <p class="products-subtitle">
                 <template lwc:if={hasLeadData}>
-                    Based on <strong>{parsedLeadData.companyName}</strong>'s requirements
-                    ({parsedLeadData.employeeCount} employees, {parsedLeadData.industry})
+                    Based on <strong>{leadCompanyName}</strong>'s requirements
+                    ({leadEmployeeCount} employees, {leadIndustry})
                 </template>
                 <template lwc:else>
-                    Browse the complete UKG product catalog
+                    Browse the complete product catalog
                 </template>
             </p>
         </div>
@@ -52,11 +52,16 @@
             <div class="product-grid">
                 <template for:each={filteredProducts} for:item="item">
                     <c-product-card
-                        key={item.product.productId}
+                        key={item.product.Id}
                         product={item.product}
+                        monthly-price={item.monthlyPrice}
+                        annual-price={item.annualPrice}
+                        feature-list={item.featureList}
                         match-score={item.matchScore}
                         match-label={item.matchLabel}
                         is-selected={item.isSelected}
+                        reasons={item.reasons}
+                        affinity-products={item.affinityProducts}
                         onselect={handleProductSelect}
                         ondeselect={handleProductDeselect}>
                     </c-product-card>

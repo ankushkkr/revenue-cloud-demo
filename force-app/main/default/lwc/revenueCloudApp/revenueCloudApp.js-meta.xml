@@ -7,6 +7,6 @@
         <target>lightning__HomePage</target>
         <target>lightning__Tab</target>
     </targets>
-    <masterLabel>Revenue Cloud - UKG Demo</masterLabel>
-    <description>Main Revenue Cloud demo application for UKG product discovery</description>
+    <masterLabel>Revenue Cloud Demo</masterLabel>
+    <description>Main Revenue Cloud demo application for product discovery</description>
 </LightningComponentBundle>

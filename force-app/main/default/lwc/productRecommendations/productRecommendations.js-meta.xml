@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
     <apiVersion>62.0</apiVersion>
-    <isExposed>false</isExposed>
+    <isExposed>true</isExposed>
+    <targets>
+        <target>lightning__RecordPage</target>
+        <target>lightning__AppPage</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__RecordPage">
+            <property name="leadId" type="String" label="Lead ID" description="Optional: Lead ID for recommendations context" />
+        </targetConfig>
+    </targetConfigs>
+    <masterLabel>Product Recommendations</masterLabel>
+    <description>Product recommendations with smart scoring - for Opportunity or Lead record pages</description>
 </LightningComponentBundle>

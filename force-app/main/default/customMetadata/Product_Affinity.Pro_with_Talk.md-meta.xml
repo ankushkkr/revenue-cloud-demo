@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <label>Pro with Talk</label>
+    <protected>false</protected>
+    <values>
+        <field>Source_Product_Code__c</field>
+        <value xsi:type="xsd:string">UKG-PRO</value>
+    </values>
+    <values>
+        <field>Related_Product_Code__c</field>
+        <value xsi:type="xsd:string">UKG-TALK</value>
+    </values>
+    <values>
+        <field>Affinity_Strength__c</field>
+        <value xsi:type="xsd:string">Moderate</value>
+    </values>
+    <values>
+        <field>Affinity_Message__c</field>
+        <value xsi:type="xsd:string">Enhance employee engagement with internal communications</value>
+    </values>
+</CustomMetadata>

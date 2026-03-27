@@ -3,16 +3,16 @@
     <flexiPageRegions>
         <itemInstances>
             <componentInstance>
-                <componentName>c:revenueCloudApp</componentName>
-                <identifier>revenueCloudApp1</identifier>
+                <componentName>revenueCloudApp</componentName>
+                <identifier>c_revenueCloudApp</identifier>
             </componentInstance>
         </itemInstances>
         <name>main</name>
         <type>Region</type>
     </flexiPageRegions>
-    <masterLabel>Revenue Cloud UKG Demo</masterLabel>
+    <masterLabel>Revenue Cloud Demo</masterLabel>
     <template>
-        <name>flexipage:appHomeTemplateOneRegion</name>
+        <name>flexipage:defaultAppHomeTemplate</name>
     </template>
     <type>AppPage</type>
 </FlexiPage>
