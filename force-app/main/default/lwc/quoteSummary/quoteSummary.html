@@ -16,22 +16,22 @@
             <div class="product-select-grid">
                 <template for:each={productOptions} for:item="item">
                     <div key={item.product.Id}
-                         class={item.isSelected}
+                         class={item.selectClass}
                          data-id={item.product.Id}
                          onclick={handleProductToggle}>
-                        <div class="product-select-item">
-                            <lightning-input
-                                type="checkbox"
-                                checked={item.isSelected}
-                                label={item.product.Name}
-                                variant="label-hidden">
-                            </lightning-input>
-                            <div class="product-select-info">
-                                <strong>{item.product.Name}</strong>
-                                <span class="product-select-meta">
-                                    {item.product.Category__c} | {item.product.Tier__c} | ${item.monthlyPrice}/mo
-                                </span>
-                            </div>
+                        <div class="product-select-check">
+                            <template lwc:if={item.isSelected}>
+                                <lightning-icon icon-name="utility:check" size="xx-small" class="check-on"></lightning-icon>
+                            </template>
+                            <template lwc:else>
+                                <div class="check-off"></div>
+                            </template>
+                        </div>
+                        <div class="product-select-info">
+                            <strong>{item.product.Name}</strong>
+                            <span class="product-select-meta">
+                                {item.product.Category__c} | {item.product.Tier__c} | ${item.monthlyPrice}/mo
+                            </span>
                         </div>
                     </div>
                 </template>

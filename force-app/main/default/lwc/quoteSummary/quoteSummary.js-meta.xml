@@ -12,9 +12,9 @@
             <actionType>ScreenAction</actionType>
         </targetConfig>
         <targetConfig targets="lightning__RecordPage">
-            <property name="leadId" type="String" label="Lead ID" description="Lead ID for quote generation" />
+            <property name="leadId" type="String" label="Lead ID (optional)" description="Optional Lead ID - not needed for Opportunity context" />
         </targetConfig>
     </targetConfigs>
     <masterLabel>Quote Summary</masterLabel>
-    <description>Generate quotes - available as Quick Action or record page component</description>
+    <description>Generate quotes from Opportunity - available as Quick Action or record page component</description>
 </LightningComponentBundle>

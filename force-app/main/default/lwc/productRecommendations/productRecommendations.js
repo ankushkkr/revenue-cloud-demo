@@ -1,15 +1,11 @@
 import { LightningElement, api, track, wire } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import getRecommendedProducts from '@salesforce/apex/UKGProductService.getRecommendedProducts';
 import getAllProducts from '@salesforce/apex/UKGProductService.getAllProducts';
 import getLeadById from '@salesforce/apex/UKGProductService.getLeadById';
-import { getRecord, getFieldValue } from 'lightning/uiRecordApi';
-
-// Opportunity fields to detect context
-const OPP_FIELDS = [
-    'Opportunity.Name',
-    'Opportunity.AccountId'
-];
+import getOpportunityById from '@salesforce/apex/UKGProductService.getOpportunityById';
+import addProductsToOpportunity from '@salesforce/apex/UKGProductService.addProductsToOpportunity';
 
 export default class ProductRecommendations extends NavigationMixin(LightningElement) {
     @api recordId;
@@ -21,33 +17,85 @@ export default class ProductRecommendations extends NavigationMixin(LightningEle
     @track selectedCategory = '';
     @track selectedTier = '';
     @track isLoading = true;
-    @track leadRecord = null;
+
+    // Context info for display
+    contextCompany = '';
+    contextEmployeeCount = '';
+    contextIndustry = '';
+    hasContext = false;
 
     connectedCallback() {
         this.loadData();
     }
 
+    get isOnOpportunity() {
+        if (this.objectApiName) {
+            return this.objectApiName === 'Opportunity';
+        }
+        return this.recordId && String(this.recordId).startsWith('006');
+    }
+
+    get isOnLead() {
+        if (this.objectApiName) {
+            return this.objectApiName === 'Lead';
+        }
+        return this.recordId && String(this.recordId).startsWith('00Q');
+    }
+
     async loadData() {
         this.isLoading = true;
         try {
-            // If on a Lead record page, use recordId as leadId
-            const effectiveLeadId = this.objectApiName === 'Lead' ? this.recordId : this.leadId;
+            let industry = '';
+            let employeeCount = 0;
+            let requirements = [];
 
-            if (effectiveLeadId) {
-                this.leadRecord = await getLeadById({ leadId: effectiveLeadId });
-                const requirements = this.leadRecord.Requirements__c
-                    ? this.leadRecord.Requirements__c.split(',').map(r => r.trim())
+            if (this.isOnLead && this.recordId) {
+                // On Lead page — use Lead discovery data
+                const lead = await getLeadById({ leadId: this.recordId });
+                industry = lead.Industry || '';
+                employeeCount = lead.Employee_Count__c || 0;
+                requirements = lead.Requirements__c
+                    ? lead.Requirements__c.split(',').map(r => r.trim())
                     : [];
+                this.contextCompany = lead.Company || '';
+                this.contextEmployeeCount = employeeCount;
+                this.contextIndustry = industry;
+                this.hasContext = !!lead.Requirements__c;
 
-                if (requirements.length > 0) {
-                    this.recommendations = await getRecommendedProducts({
-                        industry: this.leadRecord.Industry || '',
-                        employeeCount: this.leadRecord.Employee_Count__c || 0,
-                        requirements: requirements
-                    });
-                } else {
-                    this.recommendations = await getAllProducts();
-                }
+            } else if (this.isOnOpportunity && this.recordId) {
+                // On Opportunity page — use Opportunity discovery fields
+                const opp = await getOpportunityById({ oppId: this.recordId });
+                industry = opp.Industry__c || (opp.Account ? opp.Account.Industry : '') || '';
+                employeeCount = opp.Employee_Count__c ||
+                    (opp.Account ? opp.Account.NumberOfEmployees : 0) || 0;
+                requirements = opp.Requirements__c
+                    ? opp.Requirements__c.split(',').map(r => r.trim())
+                    : [];
+                this.contextCompany = opp.Account ? opp.Account.Name : opp.Name;
+                this.contextEmployeeCount = employeeCount;
+                this.contextIndustry = industry;
+                this.hasContext = !!opp.Requirements__c;
+
+            } else if (this.leadId) {
+                // Explicit leadId passed as property
+                const lead = await getLeadById({ leadId: this.leadId });
+                industry = lead.Industry || '';
+                employeeCount = lead.Employee_Count__c || 0;
+                requirements = lead.Requirements__c
+                    ? lead.Requirements__c.split(',').map(r => r.trim())
+                    : [];
+                this.contextCompany = lead.Company || '';
+                this.contextEmployeeCount = employeeCount;
+                this.contextIndustry = industry;
+                this.hasContext = !!lead.Requirements__c;
+            }
+
+            if (requirements.length > 0) {
+                this.recommendations = await getRecommendedProducts({
+                    industry: industry,
+                    employeeCount: employeeCount,
+                    requirements: requirements
+                });
             } else {
                 this.recommendations = await getAllProducts();
             }
@@ -59,19 +107,19 @@ export default class ProductRecommendations extends NavigationMixin(LightningEle
     }
 
     get hasLeadData() {
-        return this.leadRecord && this.leadRecord.Company;
+        return this.hasContext;
     }
 
     get leadCompanyName() {
-        return this.leadRecord ? this.leadRecord.Company : '';
+        return this.contextCompany;
     }
 
     get leadEmployeeCount() {
-        return this.leadRecord ? this.leadRecord.Employee_Count__c : '';
+        return this.contextEmployeeCount;
     }
 
     get leadIndustry() {
-        return this.leadRecord ? this.leadRecord.Industry : '';
+        return this.contextIndustry;
     }
 
     get categoryOptions() {
@@ -138,6 +186,10 @@ export default class ProductRecommendations extends NavigationMixin(LightningEle
         return '$' + total.toFixed(2);
     }
 
+    get actionButtonLabel() {
+        return this.isOnOpportunity ? 'Add to Opportunity' : 'Generate Quote';
+    }
+
     handleCategoryChange(event) {
         this.selectedCategory = event.detail.value;
     }
@@ -146,10 +198,34 @@ export default class ProductRecommendations extends NavigationMixin(LightningEle
         this.selectedTier = event.detail.value;
     }
 
-    handleProductSelect(event) {
+    async handleProductSelect(event) {
         const productId = event.detail;
         if (!this.selectedProductIds.includes(productId)) {
             this.selectedProductIds = [...this.selectedProductIds, productId];
+        }
+
+        if (this.isOnOpportunity && this.recordId) {
+            try {
+                const result = await addProductsToOpportunity({
+                    opportunityId: this.recordId,
+                    productIds: [productId]
+                });
+                this.dispatchEvent(
+                    new ShowToastEvent({
+                        title: 'Product Added',
+                        message: result,
+                        variant: 'success'
+                    })
+                );
+            } catch (error) {
+                this.dispatchEvent(
+                    new ShowToastEvent({
+                        title: 'Error',
+                        message: error.body ? error.body.message : 'Failed to add product.',
+                        variant: 'error'
+                    })
+                );
+            }
         }
     }
 
@@ -158,13 +234,36 @@ export default class ProductRecommendations extends NavigationMixin(LightningEle
         this.selectedProductIds = this.selectedProductIds.filter(id => id !== productId);
     }
 
-    handleGenerateQuote() {
-        // Fire event with selected products for parent/quick action to handle
-        this.dispatchEvent(new CustomEvent('productsselected', {
-            detail: {
-                productIds: this.selectedProductIds,
-                leadId: this.leadRecord ? this.leadRecord.Id : null
+    async handleGenerateQuote() {
+        if (this.isOnOpportunity && this.recordId) {
+            try {
+                const result = await addProductsToOpportunity({
+                    opportunityId: this.recordId,
+                    productIds: this.selectedProductIds
+                });
+                this.dispatchEvent(
+                    new ShowToastEvent({
+                        title: 'Products Added',
+                        message: result,
+                        variant: 'success'
+                    })
+                );
+                this.selectedProductIds = [];
+            } catch (error) {
+                this.dispatchEvent(
+                    new ShowToastEvent({
+                        title: 'Error',
+                        message: error.body ? error.body.message : 'Failed to add products.',
+                        variant: 'error'
+                    })
+                );
             }
-        }));
+        } else {
+            this.dispatchEvent(new CustomEvent('productsselected', {
+                detail: {
+                    productIds: this.selectedProductIds
+                }
+            }));
+        }
     }
 }

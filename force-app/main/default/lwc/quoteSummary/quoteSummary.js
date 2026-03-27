@@ -1,23 +1,19 @@
 import { LightningElement, api, track } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { CloseActionScreenEvent } from 'lightning/actions';
-import getLeadById from '@salesforce/apex/UKGProductService.getLeadById';
 import getAllProducts from '@salesforce/apex/UKGProductService.getAllProducts';
-import generateQuote from '@salesforce/apex/UKGProductService.generateQuote';
+import generateQuoteFromOpportunity from '@salesforce/apex/UKGProductService.generateQuoteFromOpportunity';
+import addProductsToOpportunity from '@salesforce/apex/UKGProductService.addProductsToOpportunity';
 
 export default class QuoteSummary extends LightningElement {
     @api recordId;
-    @api leadId;
-    @api productIds;
+    @api leadId; // optional, kept for backward compatibility
 
     @track billingFrequency = 'monthly';
     @track quoteData = null;
     @track isLoading = false;
-    @track leadRecord = null;
     @track allProducts = [];
     @track selectedProductIds = [];
-
-    // Step management: 'select' or 'quote'
     @track currentStep = 'select';
 
     connectedCallback() {
@@ -44,10 +40,14 @@ export default class QuoteSummary extends LightningElement {
     }
 
     get productOptions() {
-        return this.allProducts.map(r => ({
-            ...r,
-            isSelected: this.selectedProductIds.includes(r.product.Id)
-        }));
+        return this.allProducts.map(r => {
+            const selected = this.selectedProductIds.includes(r.product.Id);
+            return {
+                ...r,
+                isSelected: selected,
+                selectClass: selected ? 'product-select-item selected' : 'product-select-item'
+            };
+        });
     }
 
     get hasSelectedProducts() {
@@ -71,28 +71,18 @@ export default class QuoteSummary extends LightningElement {
         }
     }
 
-    @api set setLeadId(value) {
-        this.leadId = value;
-    }
-    get setLeadId() { return this.leadId; }
-
     async handleGenerateQuote() {
-        if (!this.leadId) {
-            this.dispatchEvent(
-                new ShowToastEvent({
-                    title: 'Lead Required',
-                    message: 'Please provide a Lead ID to generate a quote.',
-                    variant: 'warning'
-                })
-            );
-            return;
-        }
-
         this.isLoading = true;
         try {
-            this.leadRecord = await getLeadById({ leadId: this.leadId });
-            this.quoteData = await generateQuote({
-                leadId: this.leadId,
+            // Add products to Opportunity as line items
+            await addProductsToOpportunity({
+                opportunityId: this.recordId,
+                productIds: this.selectedProductIds
+            });
+
+            // Generate the quote
+            this.quoteData = await generateQuoteFromOpportunity({
+                opportunityId: this.recordId,
                 productIds: this.selectedProductIds,
                 billingFrequency: this.billingFrequency
             });
@@ -111,33 +101,31 @@ export default class QuoteSummary extends LightningElement {
     }
 
     get hasData() {
-        return this.quoteData && this.leadRecord;
+        return this.quoteData != null;
     }
 
     get companyName() {
-        return this.leadRecord ? this.leadRecord.Company : '';
+        return this.quoteData ? this.quoteData.companyName : '';
     }
 
     get contactName() {
-        const l = this.leadRecord;
-        if (!l) return '';
-        return ((l.FirstName || '') + ' ' + (l.LastName || '')).trim();
+        return this.quoteData ? this.quoteData.contactName : '';
     }
 
     get contactEmail() {
-        return this.leadRecord ? this.leadRecord.Email : '';
+        return this.quoteData ? this.quoteData.contactEmail : '';
     }
 
     get leadIndustry() {
-        return this.leadRecord ? this.leadRecord.Industry : '';
+        return this.quoteData ? this.quoteData.industry : '';
     }
 
     get employeeCount() {
-        return this.leadRecord ? this.leadRecord.Employee_Count__c : 0;
+        return this.quoteData ? this.quoteData.employeeCount : 0;
     }
 
     get jobTitle() {
-        return this.leadRecord ? this.leadRecord.Title : '';
+        return this.quoteData ? this.quoteData.contactTitle : '';
     }
 
     get quoteNumber() {
@@ -224,7 +212,7 @@ export default class QuoteSummary extends LightningElement {
 
     handleBillingChange(event) {
         this.billingFrequency = event.currentTarget.dataset.value;
-        if (this.leadId && this.selectedProductIds.length > 0) {
+        if (this.selectedProductIds.length > 0) {
             this.handleGenerateQuote();
         }
     }

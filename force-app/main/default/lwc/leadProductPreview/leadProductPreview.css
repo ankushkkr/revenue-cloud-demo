@@ -1,0 +1,134 @@
+.loading {
+    display: flex;
+    justify-content: center;
+    padding: 2rem;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 2rem 1.5rem;
+}
+
+.empty-icon {
+    --slds-c-icon-color-foreground-default: #C9C9C9;
+    margin-bottom: 0.75rem;
+}
+
+.empty-text {
+    font-size: 0.9rem;
+    color: #3E3E3C;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.empty-hint {
+    font-size: 0.8rem;
+    color: #939393;
+}
+
+/* Preview List */
+.preview-list {
+    padding: 0 1rem 1rem;
+}
+
+.preview-card {
+    padding: 1rem;
+    border: 1px solid #e5e5e5;
+    border-radius: 10px;
+    margin-bottom: 0.75rem;
+    transition: box-shadow 0.2s;
+}
+
+.preview-card:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.preview-card:last-child {
+    margin-bottom: 0;
+}
+
+.preview-header {
+    margin-bottom: 0.5rem;
+}
+
+.preview-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.4rem;
+}
+
+.preview-name {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #032D60;
+}
+
+.preview-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.preview-price {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #032D60;
+    margin-left: auto;
+}
+
+/* Badge */
+.badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    display: inline-block;
+}
+
+.badge.best {
+    background: #FFF3E0;
+    color: #E65100;
+}
+
+.badge.strong {
+    background: #E3F6E8;
+    color: #1B5E20;
+}
+
+.badge.good {
+    background: #E1F5FE;
+    color: #01579B;
+}
+
+/* Score Bar */
+.score-bar-track {
+    height: 4px;
+    background: #e5e5e5;
+    border-radius: 2px;
+    margin: 0.5rem 0;
+    overflow: hidden;
+}
+
+.score-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #0176D3, #2E844A);
+    border-radius: 2px;
+    transition: width 0.6s ease;
+}
+
+/* Reason */
+.preview-reason {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.75rem;
+    color: #0176D3;
+    font-weight: 500;
+}
+
+.reason-icon {
+    --slds-c-icon-color-foreground-default: #0176D3;
+    flex-shrink: 0;
+}

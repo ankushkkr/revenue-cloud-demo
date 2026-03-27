@@ -275,6 +275,79 @@
     border-top: 1px solid #f3f3f3;
 }
 
+/* Product Selection Grid */
+.product-select-grid {
+    padding: 0 2rem;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.product-select-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e5e5e5;
+    border-radius: 10px;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+}
+
+.product-select-item:hover {
+    border-color: #0176D3;
+    background: #F0F8FF;
+}
+
+.product-select-item.selected {
+    border-color: #0176D3;
+    background: #E1F5FE;
+}
+
+.product-select-check {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.check-off {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #C9C9C9;
+    border-radius: 4px;
+}
+
+.check-on {
+    --slds-c-icon-color-foreground-default: #0176D3;
+}
+
+.product-select-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.product-select-info strong {
+    font-size: 0.9rem;
+    color: #032D60;
+}
+
+.product-select-meta {
+    font-size: 0.75rem;
+    color: #706E6B;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: center;
+    padding: 1.5rem 2rem;
+}
+
 /* Loading & Empty */
 .loading-container {
     display: flex;

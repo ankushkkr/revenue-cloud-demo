@@ -1,0 +1,50 @@
+<template>
+    <lightning-card title="Top Product Matches" icon-name="standard:product">
+        <template lwc:if={isLoading}>
+            <div class="loading">
+                <lightning-spinner alternative-text="Loading..." size="small"></lightning-spinner>
+            </div>
+        </template>
+
+        <template lwc:if={noData}>
+            <div class="empty-state">
+                <lightning-icon icon-name="utility:info" size="small" class="empty-icon"></lightning-icon>
+                <p class="empty-text">Complete the Discovery form to see product recommendations.</p>
+                <p class="empty-hint">Fill in Industry, Employee Count, and Requirements.</p>
+            </div>
+        </template>
+
+        <template lwc:if={hasRecommendations}>
+            <div class="preview-list">
+                <template for:each={topProducts} for:item="prod">
+                    <div key={prod.id} class="preview-card">
+                        <div class="preview-header">
+                            <div class="preview-title-row">
+                                <h3 class="preview-name">{prod.name}</h3>
+                                <span class={prod.matchBadgeClass}>{prod.matchScore}%</span>
+                            </div>
+                            <div class="preview-meta">
+                                <lightning-badge label={prod.category}></lightning-badge>
+                                <lightning-badge label={prod.tier}></lightning-badge>
+                                <span class="preview-price">${prod.monthlyPrice}/mo</span>
+                            </div>
+                        </div>
+
+                        <!-- Score Bar -->
+                        <div class="score-bar-track">
+                            <div class="score-bar-fill" style={prod.scoreBarStyle}></div>
+                        </div>
+
+                        <!-- Top Reason -->
+                        <template lwc:if={prod.topReason}>
+                            <div class="preview-reason">
+                                <lightning-icon icon-name={prod.topReasonIcon} size="xx-small" class="reason-icon"></lightning-icon>
+                                <span>{prod.topReason}</span>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+            </div>
+        </template>
+    </lightning-card>
+</template>

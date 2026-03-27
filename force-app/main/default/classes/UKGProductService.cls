@@ -200,6 +200,177 @@ public with sharing class UKGProductService {
         return quote;
     }
 
+    @AuraEnabled
+    public static Map<String, Object> generateQuoteFromOpportunity(
+        Id opportunityId,
+        List<Id> productIds,
+        String billingFrequency
+    ) {
+        Opportunity opp = [
+            SELECT Id, Name, Account.Name, Account.Industry,
+                   Account.NumberOfEmployees,
+                   (SELECT Id, ContactId, Contact.FirstName, Contact.LastName,
+                           Contact.Email, Contact.Title
+                    FROM OpportunityContactRoles
+                    WHERE IsPrimary = true
+                    LIMIT 1)
+            FROM Opportunity
+            WHERE Id = :opportunityId
+            LIMIT 1
+        ];
+
+        Integer employeeCount = opp.Account != null && opp.Account.NumberOfEmployees != null
+            ? opp.Account.NumberOfEmployees
+            : 1000;
+
+        String companyName = opp.Account != null ? opp.Account.Name : opp.Name;
+        String contactName = '';
+        String contactEmail = '';
+        String contactTitle = '';
+        String industry = opp.Account != null ? opp.Account.Industry : '';
+
+        if (opp.OpportunityContactRoles != null && !opp.OpportunityContactRoles.isEmpty()) {
+            OpportunityContactRole ocr = opp.OpportunityContactRoles[0];
+            contactName = ((ocr.Contact.FirstName != null ? ocr.Contact.FirstName : '') + ' ' +
+                          (ocr.Contact.LastName != null ? ocr.Contact.LastName : '')).trim();
+            contactEmail = ocr.Contact.Email;
+            contactTitle = ocr.Contact.Title;
+        }
+
+        List<Product2> products = [
+            SELECT Id, Name, ProductCode, Description,
+                   Category__c, Tier__c, Monthly_Price__c, Annual_Price__c
+            FROM Product2
+            WHERE Id IN :productIds AND IsActive = true
+        ];
+
+        Decimal subtotal = 0;
+        List<Map<String, Object>> lineItems = new List<Map<String, Object>>();
+
+        for (Product2 prod : products) {
+            Decimal unitPrice = billingFrequency == 'annual'
+                ? (prod.Annual_Price__c != null ? prod.Annual_Price__c : 0)
+                : (prod.Monthly_Price__c != null ? prod.Monthly_Price__c : 0);
+
+            Decimal lineTotal = unitPrice * employeeCount;
+            subtotal += lineTotal;
+
+            Map<String, Object> item = new Map<String, Object>();
+            item.put('productId', prod.Id);
+            item.put('productName', prod.Name);
+            item.put('category', prod.Category__c);
+            item.put('tier', prod.Tier__c);
+            item.put('unitPrice', unitPrice);
+            item.put('quantity', employeeCount);
+            item.put('lineTotal', lineTotal);
+            lineItems.add(item);
+        }
+
+        Decimal discount = 0;
+        if (productIds.size() >= 4) {
+            discount = 0.15;
+        } else if (productIds.size() >= 2) {
+            discount = 0.10;
+        }
+
+        if (employeeCount >= 5000) {
+            discount += 0.05;
+        } else if (employeeCount >= 1000) {
+            discount += 0.03;
+        }
+
+        Decimal discountAmount = subtotal * discount;
+        Decimal total = subtotal - discountAmount;
+
+        Map<String, Object> quote = new Map<String, Object>();
+        quote.put('quoteNumber', 'QT-' + String.valueOf(Math.round(Math.random() * 90000 + 10000)));
+        quote.put('companyName', companyName);
+        quote.put('contactName', contactName);
+        quote.put('contactEmail', contactEmail);
+        quote.put('contactTitle', contactTitle);
+        quote.put('industry', industry);
+        quote.put('employeeCount', employeeCount);
+        quote.put('billingFrequency', billingFrequency);
+        quote.put('lineItems', lineItems);
+        quote.put('subtotal', subtotal);
+        quote.put('discountPercent', discount * 100);
+        quote.put('discountAmount', discountAmount);
+        quote.put('total', total);
+        quote.put('createdDate', System.today().format());
+        quote.put('validUntil', System.today().addDays(30).format());
+
+        return quote;
+    }
+
+    @AuraEnabled(cacheable=true)
+    public static Opportunity getOpportunityById(Id oppId) {
+        return [
+            SELECT Id, Name, Industry__c, Employee_Count__c,
+                   Company_Size__c, Requirements__c,
+                   Account.Name, Account.Industry, Account.NumberOfEmployees
+            FROM Opportunity
+            WHERE Id = :oppId
+            LIMIT 1
+        ];
+    }
+
+    @AuraEnabled
+    public static String addProductsToOpportunity(Id opportunityId, List<Id> productIds) {
+        // Ensure the Opportunity has a Pricebook
+        Opportunity opp = [SELECT Id, Pricebook2Id FROM Opportunity WHERE Id = :opportunityId LIMIT 1];
+        if (opp.Pricebook2Id == null) {
+            Id standardPbId = [SELECT Id FROM Pricebook2 WHERE IsStandard = true LIMIT 1].Id;
+            opp.Pricebook2Id = standardPbId;
+            update opp;
+        }
+
+        // Get existing line items to avoid duplicates
+        Set<Id> existingProductIds = new Set<Id>();
+        for (OpportunityLineItem oli : [
+            SELECT Product2Id FROM OpportunityLineItem WHERE OpportunityId = :opportunityId
+        ]) {
+            existingProductIds.add(oli.Product2Id);
+        }
+
+        // Get PricebookEntries for the products
+        Map<Id, PricebookEntry> pbeMap = new Map<Id, PricebookEntry>();
+        for (PricebookEntry pbe : [
+            SELECT Id, Product2Id, UnitPrice
+            FROM PricebookEntry
+            WHERE Product2Id IN :productIds
+              AND Pricebook2Id = :opp.Pricebook2Id
+              AND IsActive = true
+        ]) {
+            pbeMap.put(pbe.Product2Id, pbe);
+        }
+
+        List<OpportunityLineItem> newLines = new List<OpportunityLineItem>();
+        List<String> skipped = new List<String>();
+
+        for (Id productId : productIds) {
+            if (existingProductIds.contains(productId)) {
+                skipped.add(productId);
+                continue;
+            }
+            PricebookEntry pbe = pbeMap.get(productId);
+            if (pbe != null) {
+                newLines.add(new OpportunityLineItem(
+                    OpportunityId = opportunityId,
+                    PricebookEntryId = pbe.Id,
+                    Quantity = 1,
+                    UnitPrice = pbe.UnitPrice
+                ));
+            }
+        }
+
+        if (!newLines.isEmpty()) {
+            insert newLines;
+        }
+
+        return newLines.size() + ' product(s) added' +
+            (skipped.isEmpty() ? '.' : ', ' + skipped.size() + ' already existed.');
+    }
+
     // ── Metadata loaders ──
 
     private static Map<String, Scoring_Weight__mdt> loadScoringWeights() {
@@ -394,7 +565,7 @@ public with sharing class UKGProductService {
                    Category__c, Tier__c, Min_Employees__c, Tags__c, Features__c,
                    Monthly_Price__c, Annual_Price__c
             FROM Product2
-            WHERE IsActive = true
+            WHERE IsActive = true AND ProductCode LIKE 'UKG-%'
             ORDER BY Name
         ];
     }

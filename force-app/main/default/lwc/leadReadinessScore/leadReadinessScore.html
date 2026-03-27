@@ -1,0 +1,58 @@
+<template>
+    <lightning-card title="Discovery Readiness" icon-name="standard:calibration">
+        <div class="readiness-container">
+            <!-- Score Ring -->
+            <div class="score-section">
+                <div class={scoreColorClass}>
+                    <svg class="score-ring" viewBox="0 0 120 120">
+                        <circle class="ring-track" cx="60" cy="60" r="54" style={ringTrackStyle}></circle>
+                        <circle class="ring-progress" cx="60" cy="60" r="54" style={ringStyle}></circle>
+                    </svg>
+                    <div class="score-text">
+                        <span class="score-value">{scorePercent}</span>
+                        <span class="score-unit">%</span>
+                    </div>
+                </div>
+                <div class="score-label">{scoreLabel}</div>
+                <div class="score-detail">{completedCount} of {totalCount} fields completed</div>
+            </div>
+
+            <!-- Checklist -->
+            <div class="checklist-section">
+                <div class="checklist-group">
+                    <h3 class="group-label">Basic Info</h3>
+                    <template for:each={basicChecks} for:item="check">
+                        <div key={check.label} class={check.className}>
+                            <lightning-icon icon-name={check.icon} size="xx-small" class="check-icon"></lightning-icon>
+                            <span class="check-label">{check.label}</span>
+                            <lightning-icon icon-name={check.statusIcon} size="xx-small" class={check.statusClass}></lightning-icon>
+                        </div>
+                    </template>
+                </div>
+
+                <div class="checklist-group">
+                    <h3 class="group-label">Discovery Data</h3>
+                    <template for:each={discoveryChecks} for:item="check">
+                        <div key={check.label} class={check.className}>
+                            <lightning-icon icon-name={check.icon} size="xx-small" class="check-icon"></lightning-icon>
+                            <span class="check-label">{check.label}</span>
+                            <lightning-icon icon-name={check.statusIcon} size="xx-small" class={check.statusClass}></lightning-icon>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Requirements Summary -->
+            <template lwc:if={hasRequirements}>
+                <div class="requirements-summary">
+                    <h3 class="group-label">Selected Requirements ({requirementCount})</h3>
+                    <div class="tag-list">
+                        <template for:each={requirementTags} for:item="tag">
+                            <lightning-badge key={tag} label={tag} class="req-tag"></lightning-badge>
+                        </template>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </lightning-card>
+</template>

@@ -1,0 +1,139 @@
+.readiness-container {
+    padding: 1rem;
+}
+
+/* Score Ring */
+.score-section {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.score-complete,
+.score-high,
+.score-medium,
+.score-low {
+    position: relative;
+    display: inline-block;
+    width: 120px;
+    height: 120px;
+}
+
+.score-ring {
+    transform: rotate(-90deg);
+    width: 120px;
+    height: 120px;
+}
+
+.ring-track {
+    fill: none;
+    stroke: #e5e5e5;
+    stroke-width: 8;
+}
+
+.ring-progress {
+    fill: none;
+    stroke-width: 8;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.6s ease;
+}
+
+.score-complete .ring-progress { stroke: #2E844A; }
+.score-high .ring-progress { stroke: #0176D3; }
+.score-medium .ring-progress { stroke: #FE9339; }
+.score-low .ring-progress { stroke: #EA001E; }
+
+.score-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    align-items: baseline;
+}
+
+.score-value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #032D60;
+}
+
+.score-unit {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #706E6B;
+}
+
+.score-label {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #032D60;
+    margin-top: 0.5rem;
+}
+
+.score-detail {
+    font-size: 0.8rem;
+    color: #706E6B;
+    margin-top: 0.25rem;
+}
+
+/* Checklist */
+.checklist-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.group-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #706E6B;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+}
+
+.check-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0;
+    font-size: 0.8rem;
+}
+
+.check-item.done {
+    color: #3E3E3C;
+}
+
+.check-item.pending {
+    color: #939393;
+}
+
+.check-label {
+    flex: 1;
+}
+
+.check-icon {
+    flex-shrink: 0;
+}
+
+.status-done {
+    --slds-c-icon-color-foreground-default: #2E844A;
+}
+
+.status-pending {
+    --slds-c-icon-color-foreground-default: #C9C9C9;
+}
+
+/* Requirements */
+.requirements-summary {
+    padding-top: 1rem;
+    border-top: 1px solid #f3f3f3;
+}
+
+.tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.4rem;
+}
